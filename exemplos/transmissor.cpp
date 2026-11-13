@@ -85,6 +85,7 @@ void enviaMsg1(){
     RtcDateTime agora = Rtc.GetDateTime();
     uint8_t hora = agora.Hour();
     uint8_t minuto = agora.Minute();
+    uint8_t segundo = agora.Second();
 
     canMsg1.can_id  = 0x01;
     canMsg1.can_dlc = 8;
@@ -94,7 +95,7 @@ void enviaMsg1(){
     canMsg1.data[3] = tensaoBateria();
     canMsg1.data[4] = hora;
     canMsg1.data[5] = minuto;
-    canMsg1.data[6] = 0xFF;
+    canMsg1.data[6] = segundo;
     canMsg1.data[7] = 0x00;
 
     mcp2515.sendMessage(&canMsg1);

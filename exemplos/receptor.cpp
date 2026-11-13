@@ -22,24 +22,30 @@ void setup() {
 
 void loop() {
   if (mcp2515.readMessage(&canMsg) == MCP2515::ERROR_OK) {
-    Serial.print(canMsg.can_id, HEX); // print ID
+    /*Serial.print(canMsg.can_id, HEX); // print ID
     Serial.print(" "); 
     Serial.print(canMsg.can_dlc, HEX); // print DLC
-    Serial.print(" ");
+    Serial.print(" ");*/
+    Serial.println(); Serial.println(); Serial.println(); Serial.println();
+    Serial.println("------------------------------");
+    if(canMsg.data[0] == 1) Serial.println("Porta-mala aberto");
+
+    else Serial.println("Porta-mala fechado");
     
-    for (int i = 0; i<canMsg.can_dlc; i++)  {  // print the data
-      /*Serial.print(canMsg.data[i],HEX);
-      Serial.print(" ");*/
-      if(i == 0){
-        if(canMsg.data[i] == 1){
-          Serial.println("Porta-mala aberto");
-        }
+    int16_t valorBruto = (int16_t)(canMsg.data[1] << 8) | canMsg.data[2];
+    float temperatura = valorBruto/10;
+    Serial.print("Temperatura: "); Serial.print(temperatura); Serial.println(" °C");
 
-        else Serial.println("Porta-mala fechado");
-      }
-    }
+    float tensaoBateria = canMsg.data[3] / 10;
+    Serial.print("Tensao da bateria: "); Serial.print(tensaoBateria); Serial.println(" V");
 
-    Serial.println();      
+    uint8_t hora = canMsg.data[4];
+    uint8_t minuto = canMsg.data[5];
+    uint8_t segundo = canMsg.data[6];
+
+    Serial.print("Relogio: "); Serial.print(hora); Serial.print(":"); Serial.print(minuto); Serial.print(":"); Serial.println(segundo);
+
+    Serial.println("------------------------------");        
   }
 
   wdt_reset();
