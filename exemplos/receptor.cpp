@@ -28,8 +28,15 @@ void loop() {
     Serial.print(" ");
     
     for (int i = 0; i<canMsg.can_dlc; i++)  {  // print the data
-      Serial.print(canMsg.data[i],HEX);
-      Serial.print(" ");
+      /*Serial.print(canMsg.data[i],HEX);
+      Serial.print(" ");*/
+      if(i == 0){
+        if(canMsg.data[i] == 1){
+          Serial.println("Porta-mala aberto");
+        }
+
+        else Serial.println("Porta-mala fechado");
+      }
     }
 
     Serial.println();      
