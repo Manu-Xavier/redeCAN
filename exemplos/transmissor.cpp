@@ -2,6 +2,8 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <mcp2515.h>
+#include <ThreeWire.h>
+#include <RtcDS1302.h>
 #include <avr/wdt.h>
 
 /*
@@ -10,13 +12,11 @@ Identificação dos bytes do frame CAN:
     byte 1: byte 1 da temperatura
     byte 2: byte 2 da temperatura
     byte 3: tensão da bateria (dividir por 10 no receptor para achar o valor em volts corretamente)
-    byte 4: nc
-    byte 5: nc
+    byte 4: hora
+    byte 5: minuto
     byte 6: nc
     byte 7: nc
-*/
 
-/*
     A4: SDA
     A5: SCL
 
@@ -24,6 +24,10 @@ Identificação dos bytes do frame CAN:
     11: MOSI
     12: MISO
     13: SCK
+
+    5: CLK/SCLK
+    4: DAT/IO
+    2: RST/CE
 */
 
 unsigned long refMillis = 0;
