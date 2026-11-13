@@ -32,29 +32,29 @@ Identificação dos bytes do frame CAN:
 
 unsigned long refMillis = 0;
 const unsigned int tempo = 100;
-//const uint8_t LM75B_Addr = 0x48;
+const uint8_t LM75B_Addr = 0x48;
 
 const int led = 9; //led de debug
 static const int portaMalas = 8;
 static const int bateria = A0;
 
 struct can_frame canMsg1;
-//struct can_frame canMsg2;
 MCP2515 mcp2515(10); //cria o objeto mcp2515 com pino SS configurado para o pino 10 do arduino
+ThreeWire myWire(4, 5, 2);
+RtcDS1302<ThreeWire> Rtc(myWire);
 
 void enviaMsg1();
-//float lerTemp();
+float lerTemp();
 bool portaMalas_Status();
 uint16_t tensaoBateria();
 
-void setup() {
-    //enviaMsg1();
-  
+void setup() {  
     //while (!Serial); //Instrução valida apenas para embarcados que possuem comunicação usb nativa como o arduino leonardo, esp32 c3, etc.
                        //em microcontroladores que usam conversores serial/usb, é desnecessário. 
     Serial.begin(115200);
 
-    //Wire.begin();
+    Wire.begin();
+    Rtc.Begin();
     
     mcp2515.reset();
     mcp2515.setBitrate(CAN_125KBPS, MCP_8MHZ);
@@ -81,23 +81,26 @@ void loop() {
 }
 
 void enviaMsg1(){
-    //int16_t temperatura = (int16_t)lroundf(lerTemp() * 10);
+    int16_t temperatura = (int16_t)lroundf(lerTemp() * 10);
+    RtcDateTime agora = Rtc.GetDateTime();
+    uint8_t hora = agora.Hour();
+    uint8_t minuto = agora.Minute();
 
     canMsg1.can_id  = 0x01;
     canMsg1.can_dlc = 8;
     canMsg1.data[0] = portaMalas_Status();
-    canMsg1.data[1] = 0x00; //temperatura >> 8;
-    canMsg1.data[2] = 0x00; //temperatura & 0xFF;
+    canMsg1.data[1] = temperatura >> 8;
+    canMsg1.data[2] = temperatura & 0xFF;
     canMsg1.data[3] = tensaoBateria();
-    canMsg1.data[4] = 0x00;
-    canMsg1.data[5] = 0xFF;
+    canMsg1.data[4] = hora;
+    canMsg1.data[5] = minuto;
     canMsg1.data[6] = 0xFF;
     canMsg1.data[7] = 0x00;
 
     mcp2515.sendMessage(&canMsg1);
 }
 
-/*float lerTemp() {
+float lerTemp() {
     Wire.beginTransmission(LM75B_Addr);
     Wire.write(0x00);
     Wire.endTransmission(false);
@@ -108,7 +111,7 @@ void enviaMsg1(){
     int16_t raw = (int16_t)((msb << 8) | lsb);
 
     return (raw >> 5) * 0.125f;
-}*/
+}
 
 bool portaMalas_Status(){
     if(digitalRead(portaMalas) == 0)
