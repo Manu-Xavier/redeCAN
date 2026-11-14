@@ -14,7 +14,7 @@ Identificação dos bytes do frame CAN:
     byte 3: tensão da bateria (dividir por 10 no receptor para achar o valor em volts corretamente)
     byte 4: hora
     byte 5: minuto
-    byte 6: nc
+    byte 6: segundo
     byte 7: nc
 
     A4: SDA
