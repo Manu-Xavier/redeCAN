@@ -47,6 +47,7 @@ void enviaMsg1();
 float lerTemp();
 bool portaMalas_Status();
 uint16_t tensaoBateria();
+void printDateTime(const RtcDateTime& dt);
 
 void setup() {  
     //while (!Serial); //Instrução valida apenas para embarcados que possuem comunicação usb nativa como o arduino leonardo, esp32 c3, etc.
@@ -56,7 +57,15 @@ void setup() {
     Wire.begin();
     Rtc.Begin();
 
+    if (Rtc.GetIsWriteProtected()) Rtc.SetIsWriteProtected(false);
+    if (!Rtc.GetIsRunning())       Rtc.SetIsRunning(true);   // limpa o bit CH
+
     RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
+    if (!Rtc.IsDateTimeValid() || Rtc.GetDateTime() < compiled) {
+        Rtc.SetDateTime(compiled);   // acerta com a hora da compilação
+    }
+    //RtcDateTime compiled = RtcDateTime(2026, 11, 13, 21, 0, 0);
+
     
     mcp2515.reset();
     mcp2515.setBitrate(CAN_125KBPS, MCP_8MHZ);
@@ -75,6 +84,11 @@ void loop() {
         Serial.println("Mensagem enviada");
 
         digitalWrite(led, !digitalRead(led));
+
+        RtcDateTime now = Rtc.GetDateTime();
+
+        printDateTime(now);
+        Serial.println();
 
         refMillis = millis();
     }
@@ -130,4 +144,20 @@ uint16_t tensaoBateria(){
     uint8_t tensao = map(leituraAnalogica, 0, 1023, 100, 130);
 
     return tensao;
+}
+
+void printDateTime(const RtcDateTime& dt)
+{
+    char datestring[26];
+
+    snprintf_P(datestring, 
+            countof(datestring),
+            PSTR("%02u/%02u/%04u %02u:%02u:%02u"),
+            dt.Month(),
+            dt.Day(),
+            dt.Year(),
+            dt.Hour(),
+            dt.Minute(),
+            dt.Second() );
+    Serial.print(datestring);
 }
